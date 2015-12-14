@@ -11,7 +11,7 @@
 #define MAX_NUM_SPLITTING 9
 #define DEFAULT_TIP_PERCENT 15
 #define DEFAULT_NUM_SPLITTING 2
-#define BILL_DEFAULT {10, 00}
+#define DEFAULT_BILL (CurrencyAmount){10,00}
 #define PERSIST_VERSION 1
 #define PERSIST_KEY_VERSION 100
 #define PERSIST_KEY_BILL 200
@@ -27,7 +27,7 @@ static int num_splitting;
 
 
 static int currency_amount_get_as_cents(CurrencyAmount amount) {
-  int total_cents = 100*amount.dollars + amount.cents;
+  return 100*amount.dollars + amount.cents;
 }
 
 
@@ -52,9 +52,9 @@ static void update_totals(void) {
 
 
 void calc_persist_store(void) {
-  persist_write_int(PERSIST_VERSION);
-  persist_write_int(PERSIST_KEY_BILL, &tip_percent, sizeof(tip_percent));
-  persist_write_int(PERSIST_KEY_BILL, &num_splitting, sizeof(num_splitting));
+  persist_write_int(PERSIST_KEY_VERSION, PERSIST_VERSION);
+  persist_write_int(PERSIST_KEY_BILL, tip_percent);
+  persist_write_int(PERSIST_KEY_BILL, num_splitting);
   persist_write_data(PERSIST_KEY_BILL, &bill, sizeof(bill));
 }
 
@@ -65,7 +65,7 @@ void calc_persist_read(void) {
     tip_percent = persist_read_int(PERSIST_KEY_TIP_PERCENT);
     num_splitting = persist_read_int(PERSIST_KEY_NUM_SPLITTING);
   } else {
-    bill = BILL_DEFAULT;
+    bill = DEFAULT_BILL;
     tip_percent = DEFAULT_TIP_PERCENT;
     num_splitting = DEFAULT_NUM_SPLITTING;
   }
@@ -76,43 +76,44 @@ void calc_persist_read(void) {
 
 
 char *calc_get_bill_dollars_txt(void) {
-  char *s_buffer[4];
-  sprintf(s_buffer, sizeof(s_buffer), "%3d", bill.dollars);
+  static char s_buffer[4];
+  snprintf(s_buffer, sizeof(s_buffer), "%3d", bill.dollars);
+  APP_LOG(APP_LOG_LEVEL_DEBUG, s_buffer);
   return s_buffer;
 }
 
 
 char *calc_get_bill_cents_txt(void) {
-  char *s_buffer[3];
-  sprintf(s_buffer, sizeof(s_buffer), "%02d", bill.cents);
+  static char s_buffer[3];
+  snprintf(s_buffer, sizeof(s_buffer), "%02d", bill.cents);
   return s_buffer;
 }
 
 
 char *calc_get_tip_percent_txt(void) {
-  char *s_buffer[3];
-  sprintf(s_buffer, sizeof(s_buffer), "%2d", tip_percent);
+  static char s_buffer[3];
+  snprintf(s_buffer, sizeof(s_buffer), "%2d", tip_percent);
   return s_buffer;
 }
 
 
 char *calc_get_num_splitting_txt(void) {
-  char *s_buffer[2];
-  sprintf(s_buffer, sizeof(s_buffer), "%d", num_splitting);
+  static char s_buffer[2];
+  snprintf(s_buffer, sizeof(s_buffer), "%d", num_splitting);
   return s_buffer;
 }
 
 
 char *calc_total_txt(void) {
-  char *s_buffer[9];
-  sprintf(s_buffer, sizeof(s_buffer), "%4d.%2d/", total.dollars, total.cents);
+  static char s_buffer[9];
+  snprintf(s_buffer, sizeof(s_buffer), "%4d.%2d/", total.dollars, total.cents);
   return s_buffer;
 }
 
 
-char *calc_total_txt(void) {
-  char *s_buffer[9];
-  sprintf(s_buffer, sizeof(s_buffer), "%4d.%2d/", total_per_person.dollars, total_per_person.cents);
+char *calc_total_per_person_txt(void) {
+  static char s_buffer[9];
+  snprintf(s_buffer, sizeof(s_buffer), "%4d.%2d/", total_per_person.dollars, total_per_person.cents);
   return s_buffer;
 }
 
@@ -183,7 +184,7 @@ void calc_inc_num_splitting(void) {
 }
 
 
-void calc_inc_num_splitting(void) {
+void calc_dec_num_splitting(void) {
   num_splitting --;
   if (num_splitting < MIN_NUM_SPLITTING) {
     num_splitting = MAX_NUM_SPLITTING;
