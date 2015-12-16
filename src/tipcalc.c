@@ -4,7 +4,6 @@
 
 #define NUM_INPUT_FIELDS 4
 #define FONT_TOP_PADDING -10
-#define FONT fonts_get_system_font(FONT_KEY_GOTHIC_24)
 
 
 static int *current_input_idx;  // use in click handlers to select callbacks
@@ -16,7 +15,10 @@ static Layer *bill_dollars_layer;
 static Layer *bill_cents_layer;
 static Layer *tip_percent_layer;
 static Layer *num_splitting_layer;
-
+static GFont helvetica_18;
+static GFont helvetica_22;
+static GFont helvetica_24;
+static GFont helvetica_26;
 
 
 // Define ClickCallbackSets and ClickHandlers
@@ -63,10 +65,12 @@ static Layer *input_layer_create(GetTxtCallback *get_text, GFont font, bool is_s
 
 
 static void main_window_load(Window* window) {
+  helvetica_24 = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_HELVETICA_ROUNDED_24));
+
   main_layer = window_get_root_layer(main_window);
 
   // Bill dollars
-  bill_dollars_layer = input_layer_create(calc_get_bill_dollars_txt, FONT, true);
+  bill_dollars_layer = input_layer_create(calc_get_bill_dollars_txt, helvetica_24, true);
 
   // Create InputLayerData.
   // Define update procedures
@@ -74,6 +78,11 @@ static void main_window_load(Window* window) {
 
 
 static void main_window_unload(Window *window) {
+  fonts_unload_custom_font(helvetica_18);
+  fonts_unload_custom_font(helvetica_22);
+  fonts_unload_custom_font(helvetica_24);
+  fonts_unload_custom_font(helvetica_26);
+
   layer_destroy(selection_indicator);
   layer_destroy(bill_dollars_layer);
   layer_destroy(bill_cents_layer);
