@@ -3,7 +3,7 @@
 #include "tipcalc.h"
 
 #define NUM_INPUT_FIELDS 4
-#define FONT_TOP_PADDING -10
+#define BUTTON_HOLD_REPEAT_MS 100
 
 
 static int *current_input_idx;  // use in click handlers to select callbacks
@@ -28,39 +28,74 @@ static GFont helvetica_26;
 
 
 static void input_field_update_proc(Layer *layer, GContext *ctx) {
-  graphics_context_set_text_color(ctx, GColorBlack);  // TODO: set white when selected
   InputField *input_field = (InputField *)layer_get_data(layer);
-  // Create the needed frame needed to fit text.
+
+  if (input_field->is_selected) {
+    // Set the text color to white.
+    graphics_context_set_text_color(ctx, GColorWhite);
+    // Draw the selection box.
+    graphics_context_set_fill_color(ctx, GColorBlack);
+    graphics_fill_rect(ctx, input_field->selection_frame, 0, GCornerNone);
+  } else {
+    // Set the text color to white.
+    graphics_context_set_text_color(ctx, GColorBlack);
+  }
+
+  // Draw the text.
   char *text = input_field->get_text();
-  GSize size = graphics_text_layout_get_content_size(
-      text, input_field->font, GRect(0, 0, 144, 168), GTextOverflowModeWordWrap, GTextAlignmentRight
-  );
-  GRect frame = layer_get_frame(layer);
-  frame.size = size;
-  // TODO: adjust frame to arrange next to .layer_to_right
-  // Draw text.
-  graphics_draw_text(ctx, text, input_field->font, frame, GTextOverflowModeWordWrap, GTextAlignmentRight, NULL);
-  layer_set_clips(layer, false);  // TODO: check if needed
-  // Set selection frame.
-  frame.size.h += FONT_TOP_PADDING;
-  frame.origin.y += FONT_TOP_PADDING;
-  input_field->selection_frame = frame;
+  graphics_draw_text(ctx, text, input_field->font, input_field->text_frame,
+                     GTextOverflowModeWordWrap, GTextAlignmentRight, NULL);
 }
 
 
-static Layer *input_layer_create(GetTxtCallback *get_text, GFont font, bool is_selected) {
+static Layer *input_layer_create(GetTxtCallback *get_text, GFont font, IncDecCallback *inc_value,
+                                 IncDecCallback *dec_value, GRect text_frame, GRect selection_frame,
+                                 bool is_selected) {
   Layer *layer = layer_create_with_data(GRect(0, 0, 144, 168), sizeof(InputField));
   InputField *input_field = layer_get_data(layer);
+
   // Set defaults.
   *input_field = (InputField) {
+      .get_text = get_text,
       .font = font,
-      .is_selected = is_selected,
-      .get_text = get_text
+      .inc_value = inc_value,
+      .dec_value = dec_value,
+      .text_frame = text_frame,
+      .selection_frame = selection_frame,
+      .is_selected = is_selected
   };
   layer_set_update_proc(layer, input_field_update_proc);
   layer_add_child(main_layer, layer);
+  layer_set_clips(layer, false);  // TODO: check if needed
   layer_mark_dirty(layer);
+
   return layer;
+}
+
+
+static void up_click_handler(ClickRecognizerRef recognizer, void *context) {
+  InputField *input_field = (InputField *)layer_get_data(bill_dollars_layer);
+  input_field->inc_value();
+  layer_mark_dirty(bill_dollars_layer);
+}
+
+
+static void down_click_handler(ClickRecognizerRef recognizer, void *context) {
+  InputField *input_field = (InputField *)layer_get_data(bill_dollars_layer);
+  input_field->dec_value();
+  layer_mark_dirty(bill_dollars_layer);
+}
+
+
+//static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
+//  text_layer_set_text(text_layer, "Select");
+//}
+
+
+static void click_config_provider(void *context) {
+//  window_single_click_subscribe(BUTTON_ID_SELECT, select_click_handler);
+  window_single_repeating_click_subscribe(BUTTON_ID_UP, BUTTON_HOLD_REPEAT_MS, up_click_handler);
+  window_single_repeating_click_subscribe(BUTTON_ID_DOWN, BUTTON_HOLD_REPEAT_MS, down_click_handler);
 }
 
 
@@ -70,10 +105,8 @@ static void main_window_load(Window* window) {
   main_layer = window_get_root_layer(main_window);
 
   // Bill dollars
-  bill_dollars_layer = input_layer_create(calc_get_bill_dollars_txt, helvetica_24, true);
-
-  // Create InputLayerData.
-  // Define update procedures
+  bill_dollars_layer = input_layer_create(calc_get_bill_dollars_txt, helvetica_24, calc_inc_bill_dollars,
+                                          calc_dec_bill_dollars, GRect(61, 12, 48, 25), GRect(58, 15, 50, 24), true);
 }
 
 
@@ -93,6 +126,7 @@ static void main_window_unload(Window *window) {
 static void init(void) {
   calc_persist_read();
   main_window = window_create();
+  window_set_click_config_provider(main_window, click_config_provider);
   window_set_window_handlers(main_window, (WindowHandlers) {
       .load = main_window_load,
       .unload = main_window_unload

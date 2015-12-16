@@ -9,9 +9,9 @@
 #define MAX_BILL_DOLLARS 999
 #define MAX_TIP_PERCENT 40
 #define MAX_NUM_SPLITTING 9
-#define DEFAULT_TIP_PERCENT 15
-#define DEFAULT_NUM_SPLITTING 2
-#define DEFAULT_BILL (CurrencyAmount){10,00}
+#define DEFAULT_TIP_PERCENT 34
+#define DEFAULT_NUM_SPLITTING 4
+#define DEFAULT_BILL (CurrencyAmount){444,44}
 #define PERSIST_VERSION 1
 #define PERSIST_KEY_VERSION 100
 #define PERSIST_KEY_BILL 200
@@ -78,7 +78,6 @@ void calc_persist_read(void) {
 char *calc_get_bill_dollars_txt(void) {
   static char s_buffer[4];
   snprintf(s_buffer, sizeof(s_buffer), "%3d", bill.dollars);
-  APP_LOG(APP_LOG_LEVEL_DEBUG, s_buffer);
   return s_buffer;
 }
 
