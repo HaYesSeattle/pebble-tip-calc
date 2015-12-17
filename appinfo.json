@@ -18,13 +18,13 @@
         "type": "font",
         "name": "HELVETICA_ROUNDED_18",
         "file": "fonts/HelveticaRoundedLTStd-Bd.ttf",
-        "characterRegex": "[.%$0-9]"
+        "characterRegex": "[.% $0-9]"
       },
       {
         "type": "font",
         "name": "HELVETICA_ROUNDED_22",
         "file": "fonts/HelveticaRoundedLTStd-Bd.ttf",
-        "characterRegex": "[.%$0-9]"
+        "characterRegex": "[.% $0-9]"
       },
       {
         "type": "font",
@@ -36,7 +36,7 @@
         "type": "font",
         "name": "HELVETICA_ROUNDED_26",
         "file": "fonts/HelveticaRoundedLTStd-Bd.ttf",
-        "characterRegex": "[.%$0-9]"
+        "characterRegex": "[.% $0-9]"
       }
     ]
   }
