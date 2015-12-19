@@ -5,7 +5,7 @@
 
 
 // TODO: add .layer_to_right
-typedef struct InputField {
+typedef struct {
     GFont font;
     bool is_selected;
     GRect text_frame;
@@ -14,3 +14,9 @@ typedef struct InputField {
     IncDecCallback *inc_value;
     IncDecCallback *dec_value;
 } InputField;
+
+typedef struct {
+    GFont font;
+    GRect text_frame;
+    GetTxtCallback *get_text;
+} OutputField;

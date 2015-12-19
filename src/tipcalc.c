@@ -16,11 +16,12 @@ static InputField *input_fields[NUM_INPUT_FIELDS];
 static Window *main_window;
 
 static Layer *main_layer;
-static Layer *selection_indicator;
 static Layer *bill_dollars_layer;
 static Layer *bill_cents_layer;
 static Layer *tip_percent_layer;
 static Layer *num_splitting_layer;
+static Layer *tip_layer;
+static Layer *total_per_person_layer;
 
 static GFont helvetica_18;
 static GFont helvetica_22;
@@ -43,22 +44,41 @@ static void input_field_update_proc(Layer *layer, GContext *ctx) {
     GRect selection_frame = grect_inset(input_field->text_frame, input_field->selection_insets);
     graphics_fill_rect(ctx, selection_frame, 0, GCornerNone);
   } else {
-    // Set the text color to white.
     graphics_context_set_text_color(ctx, GColorBlack);
   }
 
-  // Draw the text.
+  // Draw the text using the text color set above.
   char *text = input_field->get_text();
   graphics_draw_text(ctx, text, input_field->font, input_field->text_frame,
                      GTextOverflowModeWordWrap, GTextAlignmentRight, NULL);
 }
 
 
+static void output_field_update_proc(Layer *layer, GContext *ctx) {
+  OutputField *output_field = (OutputField *)layer_get_data(layer);
+
+  char *text = output_field->get_text();
+  graphics_context_set_text_color(ctx, GColorBlack);
+  graphics_draw_text(ctx, text, output_field->font, output_field->text_frame,
+                     GTextOverflowModeWordWrap, GTextAlignmentRight, NULL);
+}
+
+
 static Layer *input_layer_create(void) {
-  Layer *layer = layer_create_with_data(GRect(0, 0, 144, 168), sizeof(InputField));
+  GRect main_bounds = layer_get_bounds(main_layer);
+  Layer *layer = layer_create_with_data(main_bounds, sizeof(InputField));
   layer_set_update_proc(layer, input_field_update_proc);
   layer_add_child(main_layer, layer);
-  layer_set_clips(layer, false);  // TODO: check if needed
+
+  return layer;
+}
+
+
+static Layer *output_layer_create(void) {
+  GRect main_bounds = layer_get_bounds(main_layer);
+  Layer *layer = layer_create_with_data(main_bounds, sizeof(OutputField));
+  layer_set_update_proc(layer, output_field_update_proc);
+  layer_add_child(main_layer, layer);
 
   return layer;
 }
@@ -115,7 +135,8 @@ static void main_window_load(Window* window) {
   helvetica_24 = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_HELVETICA_ROUNDED_24));
   helvetica_26 = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_HELVETICA_ROUNDED_26));
 
-  InputField *input_field;
+  // ************************************************** Input Fields **************************************************
+  InputField *input_field;  // used to set layer data attributes and store in input_fields array
   // Bill dollars
   bill_dollars_layer = input_layer_create();
   input_field = layer_get_data(bill_dollars_layer);
@@ -169,13 +190,30 @@ static void main_window_load(Window* window) {
   };
   input_fields[3] = input_field;
 
+  // ************************************************* Output Fields **************************************************
+  OutputField *output_field;  // only used to set layer data attributes
+  // Tip amount
+  tip_layer = output_layer_create();
+  output_field = layer_get_data(tip_layer);
+  *output_field = (OutputField) {
+      .font = helvetica_26,
+      .text_frame = GRect(47, ROW_2_Y, 93, 26),
+      .get_text = calc_get_tip_txt
+  };
+  // Total per person
+  total_per_person_layer = output_layer_create();
+  output_field = layer_get_data(total_per_person_layer);
+  *output_field = (OutputField) {
+      .font = helvetica_26,
+      .text_frame = GRect(32, ROW_3_Y, 108, 26),
+      .get_text = calc_get_total_per_person_txt
+  };
 
   layer_mark_dirty(main_layer);
 }
 
 
 static void main_window_unload(Window *window) {
-  layer_destroy(selection_indicator);
   layer_destroy(bill_dollars_layer);
   layer_destroy(bill_cents_layer);
   layer_destroy(tip_percent_layer);

@@ -51,6 +51,9 @@ static void update_totals(void) {
 }
 
 
+// ************************************************ persistent storage ************************************************
+
+
 void calc_persist_store(void) {
   persist_write_int(PERSIST_KEY_VERSION, PERSIST_VERSION);
   persist_write_int(PERSIST_KEY_BILL, tip_percent);
@@ -69,10 +72,11 @@ void calc_persist_read(void) {
     tip_percent = DEFAULT_TIP_PERCENT;
     num_splitting = DEFAULT_NUM_SPLITTING;
   }
+  update_totals();
 }
 
 
-// *** GetTxtCallback callbacks ***
+// ********************************************* GetTxtCallback callbacks *********************************************
 
 
 char *calc_get_bill_dollars_txt(void) {
@@ -103,21 +107,28 @@ char *calc_get_num_splitting_txt(void) {
 }
 
 
-char *calc_total_txt(void) {
+char *calc_get_tip_txt(void) {
   static char s_buffer[9];
-  snprintf(s_buffer, sizeof(s_buffer), "%4d.%2d/", total.dollars, total.cents);
+  snprintf(s_buffer, sizeof(s_buffer), "%3d.%02d", tip.dollars, tip.cents);
   return s_buffer;
 }
 
 
-char *calc_total_per_person_txt(void) {
+char *calc_get_total_txt(void) {
   static char s_buffer[9];
-  snprintf(s_buffer, sizeof(s_buffer), "%4d.%2d/", total_per_person.dollars, total_per_person.cents);
+  snprintf(s_buffer, sizeof(s_buffer), "%4d.%02d", total.dollars, total.cents);
   return s_buffer;
 }
 
 
-// *** IncDecCallback callbacks ***
+char *calc_get_total_per_person_txt(void) {
+  static char s_buffer[9];
+  snprintf(s_buffer, sizeof(s_buffer), "%4d.%02d", total_per_person.dollars, total_per_person.cents);
+  return s_buffer;
+}
+
+
+// ********************************************* IncDecCallback callbacks *********************************************
 
 
 void calc_inc_bill_dollars(void) {
