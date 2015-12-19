@@ -10,7 +10,7 @@
 #define NUM_INPUT_FIELDS 4
 
 
-static int *current_input_idx;  // use in click handlers to select callbacks
+static int current_input_idx = 0;  // use in click handlers to select callbacks
 static InputField *input_fields[NUM_INPUT_FIELDS];
 
 static Window *main_window;
@@ -34,12 +34,12 @@ static GEdgeInsets helvetica_24_insets = {7 - BOARDER, 1 - BOARDER, 1 - BOARDER,
 static void input_field_update_proc(Layer *layer, GContext *ctx) {
   InputField *input_field = (InputField *)layer_get_data(layer);
 
+  // TODO: Implement dynamic text and selection frames sizing based size of current string? Alignment?
   if (input_field->is_selected) {
     // Set the text color to white.
     graphics_context_set_text_color(ctx, GColorWhite);
     // Draw the selection box.
     graphics_context_set_fill_color(ctx, GColorBlack);
-    // TODO: implement dynamic selection frame sizing based on text size?
     GRect selection_frame = grect_inset(input_field->text_frame, input_field->selection_insets);
     graphics_fill_rect(ctx, selection_frame, 0, GCornerNone);
   } else {
@@ -65,26 +65,44 @@ static Layer *input_layer_create(void) {
 
 
 static void up_click_handler(ClickRecognizerRef recognizer, void *context) {
-  InputField *input_field = (InputField *)layer_get_data(bill_dollars_layer);
-  input_field->inc_value();
-  layer_mark_dirty(bill_dollars_layer);
+  input_fields[current_input_idx]->inc_value();
+  layer_mark_dirty(main_layer);
 }
 
 
 static void down_click_handler(ClickRecognizerRef recognizer, void *context) {
-  InputField *input_field = (InputField *)layer_get_data(bill_dollars_layer);
-  input_field->dec_value();
-  layer_mark_dirty(bill_dollars_layer);
+  input_fields[current_input_idx]->dec_value();
+  layer_mark_dirty(main_layer);
 }
 
 
-//static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
-//  text_layer_set_text(text_layer, "Select");
-//}
+// TODO: Implement select button long-click functionality
+// TODO: Flash selection frame when pressed on last input
+static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
+  if (current_input_idx < NUM_INPUT_FIELDS - 1) {
+    input_fields[current_input_idx]->is_selected = false;
+    current_input_idx++;  // advance to next input
+    input_fields[current_input_idx]->is_selected = true;
+  }
+  layer_mark_dirty(main_layer);
+}
+
+
+static void back_click_handler(ClickRecognizerRef recognizer, void *context) {
+  if (current_input_idx > 0) {
+    input_fields[current_input_idx]->is_selected = false;
+    current_input_idx--;  // advance to previous input
+    input_fields[current_input_idx]->is_selected = true;
+  } else {
+    window_stack_pop_all(true);  // TODO: Find out if this is the correct way to exit app
+  }
+  layer_mark_dirty(main_layer);
+}
 
 
 static void click_config_provider(void *context) {
-//  window_single_click_subscribe(BUTTON_ID_SELECT, select_click_handler);
+  window_single_click_subscribe(BUTTON_ID_SELECT, select_click_handler);
+  window_single_click_subscribe(BUTTON_ID_BACK, back_click_handler);
   window_single_repeating_click_subscribe(BUTTON_ID_UP, BUTTON_HOLD_REPEAT_MS, up_click_handler);
   window_single_repeating_click_subscribe(BUTTON_ID_DOWN, BUTTON_HOLD_REPEAT_MS, down_click_handler);
 }
@@ -121,7 +139,7 @@ static void main_window_load(Window* window) {
       .get_text = calc_get_bill_cents_txt,
       .inc_value = calc_inc_bill_cents,
       .dec_value = calc_dec_bill_cents,
-      .is_selected = true
+      .is_selected = false
   };
   input_fields[1] = input_field;
   // Tip percent
@@ -134,7 +152,7 @@ static void main_window_load(Window* window) {
       .get_text = calc_get_tip_percent_txt,
       .inc_value = calc_inc_tip_percent,
       .dec_value = calc_dec_tip_percent,
-      .is_selected = true
+      .is_selected = false
   };
   input_fields[2] = input_field;
   // Num splitting
@@ -142,12 +160,12 @@ static void main_window_load(Window* window) {
   input_field = layer_get_data(num_splitting_layer);
   *input_field = (InputField) {
       .font = helvetica_22,
-      .text_frame = GRect(4, ROW_3_Y, 15, 23),
+      .text_frame = GRect(4, ROW_3_Y, 16, 23),
       .selection_insets = helvetica_22_insets,
       .get_text = calc_get_num_splitting_txt,
       .inc_value = calc_inc_num_splitting,
       .dec_value = calc_dec_num_splitting,
-      .is_selected = true
+      .is_selected = false
   };
   input_fields[3] = input_field;
 
@@ -184,6 +202,7 @@ static void init(void) {
 
 static void deinit(void) {
   window_destroy(main_window);
+//  calc_persist_store();  // TODO: uncomment before release
 }
 
 
