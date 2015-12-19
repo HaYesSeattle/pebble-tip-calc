@@ -21,12 +21,6 @@ static GFont helvetica_24;
 static GFont helvetica_26;
 
 
-// Define ClickCallbackSets and ClickHandlers
-// (mark window_layer dirty after each click)
-
-// Define click_config_provider
-
-
 static void input_field_update_proc(Layer *layer, GContext *ctx) {
   InputField *input_field = (InputField *)layer_get_data(layer);
 
@@ -48,26 +42,11 @@ static void input_field_update_proc(Layer *layer, GContext *ctx) {
 }
 
 
-static Layer *input_layer_create(GetTxtCallback *get_text, GFont font, IncDecCallback *inc_value,
-                                 IncDecCallback *dec_value, GRect text_frame, GRect selection_frame,
-                                 bool is_selected) {
+static Layer *input_layer_create(void) {
   Layer *layer = layer_create_with_data(GRect(0, 0, 144, 168), sizeof(InputField));
-  InputField *input_field = layer_get_data(layer);
-
-  // Set defaults.
-  *input_field = (InputField) {
-      .get_text = get_text,
-      .font = font,
-      .inc_value = inc_value,
-      .dec_value = dec_value,
-      .text_frame = text_frame,
-      .selection_frame = selection_frame,
-      .is_selected = is_selected
-  };
   layer_set_update_proc(layer, input_field_update_proc);
   layer_add_child(main_layer, layer);
   layer_set_clips(layer, false);  // TODO: check if needed
-  layer_mark_dirty(layer);
 
   return layer;
 }
@@ -100,13 +79,24 @@ static void click_config_provider(void *context) {
 
 
 static void main_window_load(Window* window) {
-  helvetica_24 = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_HELVETICA_ROUNDED_24));
-
   main_layer = window_get_root_layer(main_window);
 
+  helvetica_24 = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_HELVETICA_ROUNDED_24));
+
+  InputField *input_field;
   // Bill dollars
-  bill_dollars_layer = input_layer_create(calc_get_bill_dollars_txt, helvetica_24, calc_inc_bill_dollars,
-                                          calc_dec_bill_dollars, GRect(61, 12, 48, 25), GRect(58, 15, 50, 24), true);
+  bill_dollars_layer = input_layer_create();
+ input_field = layer_get_data(bill_dollars_layer);
+  *input_field = (InputField) {
+      .font = helvetica_24,
+      .text_frame = GRect(61, 12, 48, 25),
+      .selection_frame = GRect(58, 15, 50, 24),
+      .get_text = calc_get_bill_dollars_txt,
+      .inc_value = calc_inc_bill_dollars,
+      .dec_value = calc_dec_bill_dollars,
+      .is_selected = true
+  };
+  layer_mark_dirty(bill_dollars_layer);
 }
 
 
