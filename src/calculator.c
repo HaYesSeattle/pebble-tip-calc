@@ -218,7 +218,7 @@ void calc_dec_num_splitting(void) {
 //  return "44";
 //}
 //char *calc_get_tip_percent_txt(void) {
-//  return "44";
+//  return "40";
 //}
 //char *calc_get_num_splitting_txt(void) {
 //  return "4";

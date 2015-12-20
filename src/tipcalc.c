@@ -9,7 +9,7 @@
 #define WINDOW_INSET 3
 #define ROW_1_Y 17
 #define ROW_2_Y 75
-#define ROW_3_Y 151
+#define ROW_3_Y 147
 #define BUTTON_HOLD_REPEAT_MS 100
 #define NUM_INPUT_FIELDS 4
 #define SUM_LINE_GCOLOR GColorFromHEX(0x979797)
@@ -87,7 +87,7 @@ static void input_field_update_proc(Layer *layer, GContext *ctx) {
     GRect text_frame = field_get_text_frame((Field *)input_field);
     GRect selection_frame = grect_inset(text_frame, input_field->selection_insets);
     // Draw the selection indicator's frame.
-    graphics_fill_rect(ctx, selection_frame, 0, GCornerNone);  // TODO: round corners?
+    graphics_fill_rect(ctx, selection_frame, 4, GCornersAll);
     log_grect(selection_frame, "selection frame");  // TODO: REMOVE
   } else {
     graphics_context_set_text_color(ctx, GColorBlack);
@@ -275,7 +275,7 @@ static void main_window_load(Window* window) {
   // Tip amount  TODO: Inform Beth that tips > $100 would push tip % completely off screen
   tip_amount_layer = output_layer_create((OutputField){
       .right_center_point = GPoint(main_bounds.size.w - (int16_t)WINDOW_INSET, ROW_2_Y),
-      .max_width = 76,  // 399.6 -> 65
+      .max_width = 74,  // 399.6 -> 65
       .font = helvetica_26,
       .font_size = 26,
       .get_text = calc_get_tip_txt
@@ -302,7 +302,7 @@ static void main_window_load(Window* window) {
   // Tip percent
   tip_percent_layer = input_layer_create((InputField){
       .right_center_point = field_get_left_center_point((Field *)layer_get_data(tip_percent_sign_layer), BOARDER - 1),
-      .max_width = 24,
+      .max_width = 23,
       .font = helvetica_22,
       .font_size = 22,
       .get_text = calc_get_tip_percent_txt,
@@ -314,7 +314,7 @@ static void main_window_load(Window* window) {
 
   // Summation line
   sum_line_layer = line_layer_create((Line){
-      .start_point = GPoint(56, ROW_2_Y + 17),
+      .start_point = GPoint(59, ROW_2_Y + 17),
       .end_point = GPoint(main_bounds.size.w - (int16_t)WINDOW_INSET, ROW_2_Y + 17),
       .stroke_width = 3,
       .stroke_color = PBL_IF_COLOR_ELSE(SUM_LINE_GCOLOR, GColorBlack)
@@ -323,7 +323,7 @@ static void main_window_load(Window* window) {
   // Total/person
   total_per_person_layer = output_layer_create((OutputField){
       .right_center_point = GPoint(main_bounds.size.w - (int16_t)WINDOW_INSET, ROW_3_Y),
-      .max_width = 76,
+      .max_width = 83,
       .font = helvetica_26,
       .font_size = 26,
       .get_text = calc_get_total_per_person_txt
@@ -341,7 +341,7 @@ static void main_window_load(Window* window) {
   // Number of people splitting
   num_splitting_layer = input_layer_create((InputField){
       .right_center_point = field_get_left_center_point((Field *)layer_get_data(total_per_person_dollar_sign_layer),
-                                                        BOARDER + 20),
+                                                        BOARDER + 12),
       .max_width = 12,
       .font = helvetica_22,
       .font_size = 22,
@@ -355,7 +355,7 @@ static void main_window_load(Window* window) {
   // Number of people splitting (÷)
   num_splitting_symbol_layer = decoration_layer_create((DecorationField){
       .right_center_point = field_get_left_center_point((Field *)layer_get_data(num_splitting_layer), BOARDER),
-      .max_width = 15,
+      .max_width = 14,
       .font = helvetica_22,
       .font_size = 22,
       .text = "÷"
