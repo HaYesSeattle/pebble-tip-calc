@@ -10,7 +10,7 @@
 #define ROW_1_Y 17
 #define ROW_2_Y 75
 #define ROW_3_Y 147
-#define BUTTON_HOLD_REPEAT_MS 150
+#define BUTTON_HOLD_REPEAT_MS 100
 #define NUM_INPUT_FIELDS 4
 #define SUM_LINE_GCOLOR GColorFromHEX(0x979797)
 
@@ -187,9 +187,18 @@ static Layer *line_layer_create(Line line) {
 // ************************************************** click handlers **************************************************
 
 static int get_click_accelerated_delta(int num_clicks) {
-  int ms = num_clicks * BUTTON_HOLD_REPEAT_MS;  // milliseconds past
-  int acceleration = 2 + 2 * (ms/2000) + 10 * (ms/6000);
-  return acceleration;
+  int ms = num_clicks * BUTTON_HOLD_REPEAT_MS;  // milliseconds button has been held down for
+  int delta;
+  if(ms <= 4000) {  // 0-4 seconds: increment by one on every interval
+    delta = 1;
+  } else if(4000 < ms && ms <= 10000 && num_clicks % 3 == 0) {  // 4-10 seconds: increment by 10 on every 3rd interval
+    delta = 10;
+  } else if(10000 < ms  && num_clicks % 5 == 0) {  // 10+ seconds: increment by 100 on every 5th interval
+    delta = 100;
+  } else {
+    delta = 0;  // this is so no increment happens on skipped intervals
+  }
+  return delta;
 }
 
 
