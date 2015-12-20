@@ -10,7 +10,7 @@
 #define ROW_1_Y 17
 #define ROW_2_Y 75
 #define ROW_3_Y 147
-#define BUTTON_HOLD_REPEAT_MS 100
+#define BUTTON_HOLD_REPEAT_MS 150
 #define NUM_INPUT_FIELDS 4
 #define SUM_LINE_GCOLOR GColorFromHEX(0x979797)
 
@@ -49,6 +49,8 @@ static GEdgeInsets helvetica_22_insets = {6 - BOARDER - 1, 1 - BOARDER, 0 - BOAR
 static GEdgeInsets helvetica_24_insets = {7 - BOARDER - 1, 1 - BOARDER, 0 - BOARDER - 1, 1 - BOARDER};
 
 
+
+
 static GPoint field_get_left_center_point(Field *field, int16_t left_padding) {
   int16_t x = field->right_center_point.x - field->max_width - left_padding;
   int16_t y = field->right_center_point.y;
@@ -76,10 +78,12 @@ static void field_draw_text(Field *field, char *text, GContext *ctx) {
 }
 
 
+// ******************************************** LayerUpdateProc callbacks *********************************************
+
 static void input_field_update_proc(Layer *layer, GContext *ctx) {
   InputField *input_field = (InputField *)layer_get_data(layer);
 
-  if (input_field->is_selected) {
+  if(input_field->is_selected) {
     // Make the text white and the selection indicator filled black.
     graphics_context_set_text_color(ctx, GColorWhite);
     graphics_context_set_fill_color(ctx, GColorBlack);
@@ -122,6 +126,8 @@ static void line_layer_update_proc(Layer *layer, GContext *ctx) {
   graphics_draw_line(ctx, line->start_point, line->end_point);
 }
 
+
+// ************************************************ Layer initializers ************************************************
 
 static Layer *input_layer_create(InputField input_field) {
   Layer *layer = layer_create_with_data(main_bounds, sizeof(InputField));
@@ -175,14 +181,39 @@ static Layer *line_layer_create(Line line) {
 }
 
 
+// ************************************************** click handlers **************************************************
+
+static int get_click_accelerated_delta(int num_clicks) {
+  int ms = num_clicks * BUTTON_HOLD_REPEAT_MS;  // milliseconds past
+  int acceleration = 2 + 2 * (ms/2000) + 10 * (ms/6000);
+  return acceleration;
+}
+
+
 static void up_click_handler(ClickRecognizerRef recognizer, void *context) {
-  input_fields[current_input_idx]->inc_value();  // TODO: accelerated scrolling
+  InputField *input_field = input_fields[current_input_idx];
+
+  int delta;
+  if(click_recognizer_is_repeating(recognizer)) {
+    delta = get_click_accelerated_delta(click_number_of_clicks_counted(recognizer));
+  } else {
+    delta = 1;
+  }
+  input_field->manipulate(delta);
   layer_mark_dirty(main_layer);
 }
 
 
 static void down_click_handler(ClickRecognizerRef recognizer, void *context) {
-  input_fields[current_input_idx]->dec_value();
+  InputField *input_field = input_fields[current_input_idx];
+
+  int delta;
+  if(click_recognizer_is_repeating(recognizer)) {
+    delta = -1 * get_click_accelerated_delta(click_number_of_clicks_counted(recognizer));
+  } else {
+    delta = -1;
+  }
+  input_field->manipulate(delta);
   layer_mark_dirty(main_layer);
 }
 
@@ -190,17 +221,18 @@ static void down_click_handler(ClickRecognizerRef recognizer, void *context) {
 // TODO: Implement select button long-click functionality
 // TODO: Flash selection frame when pressed on last input
 static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
-  if (current_input_idx < NUM_INPUT_FIELDS - 1) {
+  if(current_input_idx < NUM_INPUT_FIELDS - 1) {
     input_fields[current_input_idx]->is_selected = false;
     current_input_idx++;  // advance to next input
     input_fields[current_input_idx]->is_selected = true;
+    calc_update_totals();
+    layer_mark_dirty(main_layer);
   }
-  layer_mark_dirty(main_layer);
 }
 
 
 static void back_click_handler(ClickRecognizerRef recognizer, void *context) {
-  if (current_input_idx > 0) {
+  if(current_input_idx > 0) {
     input_fields[current_input_idx]->is_selected = false;
     current_input_idx--;  // advance to previous input
     input_fields[current_input_idx]->is_selected = true;
@@ -236,8 +268,7 @@ static void main_window_load(Window* window) {
       .font_size = 24,
       .get_text = calc_get_bill_cents_txt,
       .selection_insets = helvetica_24_insets,
-      .inc_value = calc_inc_bill_cents,
-      .dec_value = calc_dec_bill_cents,
+      .manipulate = calc_manip_bill_cents,
       .is_selected = false
   });
 
@@ -258,8 +289,7 @@ static void main_window_load(Window* window) {
       .font_size = 24,
       .get_text = calc_get_bill_dollars_txt,
       .selection_insets = helvetica_24_insets,
-      .inc_value = calc_inc_bill_dollars,
-      .dec_value = calc_dec_bill_dollars,
+      .manipulate = calc_manip_bill_dollars,
       .is_selected = true
   });
 
@@ -307,8 +337,7 @@ static void main_window_load(Window* window) {
       .font_size = 22,
       .get_text = calc_get_tip_percent_txt,
       .selection_insets = helvetica_22_insets,
-      .inc_value = calc_inc_tip_percent,
-      .dec_value = calc_dec_tip_percent,
+      .manipulate = calc_manip_tip_percent,
       .is_selected = false
   });
 
@@ -347,8 +376,7 @@ static void main_window_load(Window* window) {
       .font_size = 22,
       .get_text = calc_get_num_splitting_txt,
       .selection_insets = helvetica_22_insets,
-      .inc_value = calc_inc_num_splitting,
-      .dec_value = calc_dec_num_splitting,
+      .manipulate = calc_manip_num_splitting,
       .is_selected = false
   });
 
@@ -405,7 +433,7 @@ static void init(void) {
 
 static void deinit(void) {
   window_destroy(main_window);
-//  calc_persist_store();  // TODO: uncomment before release
+  calc_persist_store();  // TODO: uncomment before release
 }
 
 

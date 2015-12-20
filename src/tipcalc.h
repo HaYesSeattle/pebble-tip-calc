@@ -34,8 +34,7 @@ typedef struct {
     int16_t font_size;
     GetTxtCallback *get_text;
     GEdgeInsets selection_insets;
-    IncDecCallback *inc_value;
-    IncDecCallback *dec_value;
+    CalcManipCallback *manipulate;
     bool is_selected;
 } InputField;
 

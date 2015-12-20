@@ -15,7 +15,6 @@
 #define PERSIST_KEY_VERSION 100
 #define PERSIST_KEY_BILL 200
 #define PERSIST_KEY_TIP_PERCENT 300
-#define PERSIST_KEY_NUM_SPLITTING 400
 
 static CurrencyAmount bill;
 static CurrencyAmount tip;
@@ -42,7 +41,7 @@ static void currency_amount_set_from_cents(CurrencyAmount *amount, int total_cen
 }
 
 
-static void update_totals(void) {
+void calc_update_totals(void) {
   int bill_in_cents = currency_amount_get_in_cents(bill);
 
   int tip_in_cents = divide_and_round(bill_in_cents * tip_percent, 100);
@@ -56,28 +55,33 @@ static void update_totals(void) {
 }
 
 
+void calc_reset_to_defaults(void) {
+  bill = DEFAULT_BILL;
+  tip_percent = DEFAULT_TIP_PERCENT;
+  num_splitting = DEFAULT_NUM_SPLITTING;
+  calc_update_totals();
+}
+
+
 // ************************************************ persistent storage ************************************************
 
 
 void calc_persist_store(void) {
   persist_write_int(PERSIST_KEY_VERSION, PERSIST_VERSION);
-  persist_write_int(PERSIST_KEY_BILL, tip_percent);
-  persist_write_int(PERSIST_KEY_BILL, num_splitting);
+  persist_write_int(PERSIST_KEY_TIP_PERCENT, tip_percent);
   persist_write_data(PERSIST_KEY_BILL, &bill, sizeof(bill));
 }
 
 
 void calc_persist_read(void) {
-  if (persist_exists(PERSIST_KEY_BILL)) {
+  if(persist_exists(PERSIST_KEY_BILL)) {
     persist_read_data(PERSIST_KEY_BILL, &bill, sizeof(bill));
     tip_percent = persist_read_int(PERSIST_KEY_TIP_PERCENT);
-    num_splitting = persist_read_int(PERSIST_KEY_NUM_SPLITTING);
-  } else {
-    bill = DEFAULT_BILL;
-    tip_percent = DEFAULT_TIP_PERCENT;
     num_splitting = DEFAULT_NUM_SPLITTING;
+    calc_update_totals();
+  } else {
+    calc_reset_to_defaults();
   }
-  update_totals();
 }
 
 
@@ -133,79 +137,51 @@ char *calc_get_total_per_person_txt(void) {
 }
 
 
-// ********************************************* IncDecCallback callbacks *********************************************
-
+// ******************************************* CalcManipCallback callbacks ********************************************
 
 // TODO: don't update totals when accelerated scrolling?
-void calc_inc_bill_dollars(void) {
-  bill.dollars ++;
-  if (bill.dollars > MAX_BILL_DOLLARS) {
+void calc_manip_bill_dollars(int delta) {
+  if(bill.dollars + delta > MAX_BILL_DOLLARS) {
     bill.dollars = MIN_BILL_DOLLARS;
-  }
-  update_totals();
-}
-
-
-void calc_dec_bill_dollars(void) {
-  bill.dollars --;
-  if (bill.dollars < MIN_BILL_DOLLARS) {
+  } else if(bill.dollars + delta < MIN_BILL_DOLLARS) {
     bill.dollars = MAX_BILL_DOLLARS;
+  } else {
+    bill.dollars += delta;
   }
-  update_totals();
 }
 
 
-void calc_inc_bill_cents(void) {
-  bill.cents ++;
-  if (bill.cents > 99) {
+void calc_manip_bill_cents(int delta) {
+  if(bill.cents + delta > 99) {
     bill.cents = 0;
-  }
-  update_totals();
-}
-
-
-void calc_dec_bill_cents(void) {
-  bill.cents --;
-  if (bill.cents < 0) {
+  } else if(bill.cents + delta < 0) {
     bill.cents = 99;
+  } else {
+    bill.cents += delta;
   }
-  update_totals();
 }
 
 
-void calc_inc_tip_percent(void) {
-  tip_percent ++;
-  if (tip_percent > MAX_TIP_PERCENT) {
+void calc_manip_tip_percent(int delta) {
+  if(tip_percent + delta > MAX_TIP_PERCENT) {
     tip_percent = MIN_TIP_PERCENT;
-  }
-  update_totals();
-}
-
-
-void calc_dec_tip_percent(void) {
-  tip_percent --;
-  if (tip_percent < MIN_TIP_PERCENT) {
+  } else if(tip_percent + delta < MIN_TIP_PERCENT) {
     tip_percent = MAX_TIP_PERCENT;
+  } else {
+    tip_percent += delta;
   }
-  update_totals();
 }
 
 
-void calc_inc_num_splitting(void) {
-  num_splitting ++;
-  if (num_splitting > MAX_NUM_SPLITTING) {
+void calc_manip_num_splitting(int delta) {
+  if(num_splitting + delta > MAX_NUM_SPLITTING) {
     num_splitting = MIN_NUM_SPLITTING;
-  }
-  update_totals();
-}
-
-
-void calc_dec_num_splitting(void) {
-  num_splitting --;
-  if (num_splitting < MIN_NUM_SPLITTING) {
+  } else if(num_splitting + delta < MIN_NUM_SPLITTING) {
     num_splitting = MAX_NUM_SPLITTING;
+  } else {
+    num_splitting += delta;
   }
-  update_totals();
+  calc_update_totals();
 }
 
 

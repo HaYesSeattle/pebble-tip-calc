@@ -9,16 +9,13 @@ typedef struct {
 } CurrencyAmount;
 
 typedef char *(GetTxtCallback)(void);
-typedef void (IncDecCallback)(void);
+typedef void (CalcManipCallback)(int);
 
-void calc_inc_bill_dollars(void);
-void calc_dec_bill_dollars(void);
-void calc_inc_bill_cents(void);
-void calc_dec_bill_cents(void);
-void calc_inc_tip_percent(void);
-void calc_dec_tip_percent(void);
-void calc_inc_num_splitting(void);
-void calc_dec_num_splitting(void);
+void calc_manip_bill_dollars(int);
+void calc_manip_bill_cents(int);
+void calc_manip_tip_percent(int);
+void calc_manip_num_splitting(int);
+void calc_update_totals(void);
 
 char *calc_get_bill_dollars_txt(void);
 char *calc_get_bill_cents_txt(void);
