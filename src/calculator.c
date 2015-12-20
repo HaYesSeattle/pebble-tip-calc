@@ -22,6 +22,7 @@ static CurrencyAmount bill;
 static CurrencyAmount tip;
 static CurrencyAmount total;
 static CurrencyAmount total_per_person;
+// TODO: use uint8_t
 static int tip_percent;
 static int num_splitting;
 
@@ -31,6 +32,7 @@ static int currency_amount_get_as_cents(CurrencyAmount amount) {
 }
 
 
+// TODO: use modf()
 static void currency_amount_set_from_cents(CurrencyAmount *amount, int total_cents) {
   amount->dollars = total_cents / 100;
   amount->cents = total_cents % 100;
@@ -40,13 +42,13 @@ static void currency_amount_set_from_cents(CurrencyAmount *amount, int total_cen
 static void update_totals(void) {
   int bill_c = currency_amount_get_as_cents(bill);
 
-  int tip_c = ceil(((double)bill_c * (double)tip_percent) / 100.0);
+  int tip_c = ceil(((double)bill_c * (double)tip_percent) / 100);  // TODO: typecast as int; use round?
   currency_amount_set_from_cents(&tip, tip_c);
 
   int total_c = bill_c + tip_c;
   currency_amount_set_from_cents(&total, total_c);
 
-  int total_per_person_c = ceil((double)total_c / (double)num_splitting);
+  int total_per_person_c = ceil((double)total_c / (double)num_splitting);  // TODO: typecast as int; use round?
   currency_amount_set_from_cents(&total_per_person, total_per_person_c);
 }
 
@@ -81,7 +83,7 @@ void calc_persist_read(void) {
 
 char *calc_get_bill_dollars_txt(void) {
   static char s_buffer[4];
-  snprintf(s_buffer, sizeof(s_buffer), "%3d", bill.dollars);
+  snprintf(s_buffer, sizeof(s_buffer), "%d", bill.dollars);
   return s_buffer;
 }
 
@@ -108,22 +110,24 @@ char *calc_get_num_splitting_txt(void) {
 
 
 char *calc_get_tip_txt(void) {
-  static char s_buffer[9];
-  snprintf(s_buffer, sizeof(s_buffer), "%3d.%02d", tip.dollars, tip.cents);
+//  static char s_buffer[9];
+//  snprintf(s_buffer, sizeof(s_buffer), "%d.%02d", tip.dollars, tip.cents);
+  static char s_buffer[] = "444.44";  // TODO: REMOVE
   return s_buffer;
 }
 
 
 char *calc_get_total_txt(void) {
   static char s_buffer[9];
-  snprintf(s_buffer, sizeof(s_buffer), "%4d.%02d", total.dollars, total.cents);
+  snprintf(s_buffer, sizeof(s_buffer), "%d.%02d", total.dollars, total.cents);
   return s_buffer;
 }
 
 
 char *calc_get_total_per_person_txt(void) {
-  static char s_buffer[9];
-  snprintf(s_buffer, sizeof(s_buffer), "%4d.%02d", total_per_person.dollars, total_per_person.cents);
+//  static char s_buffer[9];
+//  snprintf(s_buffer, sizeof(s_buffer), "%d.%02d", total_per_person.dollars, total_per_person.cents);
+  static char s_buffer[] = "444.44";  // TODO: REMOVE
   return s_buffer;
 }
 
@@ -131,6 +135,7 @@ char *calc_get_total_per_person_txt(void) {
 // ********************************************* IncDecCallback callbacks *********************************************
 
 
+// TODO: don't update totals when accelerated scrolling?
 void calc_inc_bill_dollars(void) {
   bill.dollars ++;
   if (bill.dollars > MAX_BILL_DOLLARS) {
