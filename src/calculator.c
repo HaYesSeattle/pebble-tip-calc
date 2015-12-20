@@ -104,7 +104,7 @@ char *calc_get_bill_cents_txt(void) {
 
 char *calc_get_tip_percent_txt(void) {
   static char s_buffer[3];
-  snprintf(s_buffer, sizeof(s_buffer), "%2d", tip_percent);
+  snprintf(s_buffer, sizeof(s_buffer), "%d", tip_percent);
   return s_buffer;
 }
 

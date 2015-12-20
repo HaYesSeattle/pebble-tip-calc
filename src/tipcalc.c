@@ -384,7 +384,7 @@ static void main_window_load(Window* window) {
   num_splitting_layer = input_layer_create((InputField){
       .right_center_point = field_get_left_center_point((Field *)layer_get_data(total_per_person_dollar_sign_layer),
                                                         BOARDER + 12),
-      .max_width = 12,
+      .max_width = 13,
       .font = helvetica_22,
       .font_size = 22,
       .get_text = calc_get_num_splitting_txt,
