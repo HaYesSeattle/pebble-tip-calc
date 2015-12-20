@@ -1,5 +1,4 @@
 #include <pebble.h>
-#include <math.h>
 
 #include "calculator.h"
 #include "tipcalc.h"

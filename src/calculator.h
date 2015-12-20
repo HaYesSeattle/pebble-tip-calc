@@ -3,7 +3,6 @@
 #include <pebble.h>
 
 
-// TODO: use uint16_t
 typedef struct {
     int dollars;
     int cents;

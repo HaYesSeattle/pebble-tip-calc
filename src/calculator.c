@@ -1,5 +1,4 @@
 #include <pebble.h>
-#include <math.h>
 
 #include "calculator.h"
 
@@ -9,9 +8,9 @@
 #define MAX_BILL_DOLLARS 999
 #define MAX_TIP_PERCENT 40
 #define MAX_NUM_SPLITTING 9
-#define DEFAULT_TIP_PERCENT 44
-#define DEFAULT_NUM_SPLITTING 4
-#define DEFAULT_BILL (CurrencyAmount){444,44}
+#define DEFAULT_TIP_PERCENT 15
+#define DEFAULT_NUM_SPLITTING 1
+#define DEFAULT_BILL (CurrencyAmount){10,00}
 #define PERSIST_VERSION 1
 #define PERSIST_KEY_VERSION 100
 #define PERSIST_KEY_BILL 200
@@ -22,17 +21,21 @@ static CurrencyAmount bill;
 static CurrencyAmount tip;
 static CurrencyAmount total;
 static CurrencyAmount total_per_person;
-// TODO: use uint8_t
 static int tip_percent;
 static int num_splitting;
 
 
-static int currency_amount_get_as_cents(CurrencyAmount amount) {
+// Round up if remainder >= 0.5; only use with UNSIGNED integers
+static int divide_and_round(int dividend, int divisor) {
+  return (dividend + (divisor / 2)) / divisor;
+}
+
+
+static int currency_amount_get_in_cents(CurrencyAmount amount) {
   return 100*amount.dollars + amount.cents;
 }
 
 
-// TODO: use modf()
 static void currency_amount_set_from_cents(CurrencyAmount *amount, int total_cents) {
   amount->dollars = total_cents / 100;
   amount->cents = total_cents % 100;
@@ -40,16 +43,16 @@ static void currency_amount_set_from_cents(CurrencyAmount *amount, int total_cen
 
 
 static void update_totals(void) {
-  int bill_c = currency_amount_get_as_cents(bill);
+  int bill_in_cents = currency_amount_get_in_cents(bill);
 
-  int tip_c = ceil(((double)bill_c * (double)tip_percent) / 100);  // TODO: typecast as int; use round?
-  currency_amount_set_from_cents(&tip, tip_c);
+  int tip_in_cents = divide_and_round(bill_in_cents * tip_percent, 100);
+  currency_amount_set_from_cents(&tip, tip_in_cents);
 
-  int total_c = bill_c + tip_c;
-  currency_amount_set_from_cents(&total, total_c);
+  int total_in_cents = bill_in_cents + tip_in_cents;
+  currency_amount_set_from_cents(&total, total_in_cents);
 
-  int total_per_person_c = ceil((double)total_c / (double)num_splitting);  // TODO: typecast as int; use round?
-  currency_amount_set_from_cents(&total_per_person, total_per_person_c);
+  int total_per_person_in_cents = divide_and_round(total_in_cents, num_splitting);
+  currency_amount_set_from_cents(&total_per_person, total_per_person_in_cents);
 }
 
 
@@ -110,9 +113,8 @@ char *calc_get_num_splitting_txt(void) {
 
 
 char *calc_get_tip_txt(void) {
-//  static char s_buffer[9];
-//  snprintf(s_buffer, sizeof(s_buffer), "%d.%02d", tip.dollars, tip.cents);
-  static char s_buffer[] = "444.44";  // TODO: REMOVE
+  static char s_buffer[9];
+  snprintf(s_buffer, sizeof(s_buffer), "%d.%02d", tip.dollars, tip.cents);
   return s_buffer;
 }
 
@@ -125,9 +127,8 @@ char *calc_get_total_txt(void) {
 
 
 char *calc_get_total_per_person_txt(void) {
-//  static char s_buffer[9];
-//  snprintf(s_buffer, sizeof(s_buffer), "%d.%02d", total_per_person.dollars, total_per_person.cents);
-  static char s_buffer[] = "444.44";  // TODO: REMOVE
+  static char s_buffer[9];
+  snprintf(s_buffer, sizeof(s_buffer), "%d.%02d", total_per_person.dollars, total_per_person.cents);
   return s_buffer;
 }
 
@@ -206,3 +207,28 @@ void calc_dec_num_splitting(void) {
   }
   update_totals();
 }
+
+
+// **************************************************** debugging *****************************************************
+// TODO: REMOVE
+//char *calc_get_bill_dollars_txt(void) {
+//  return "444";
+//}
+//char *calc_get_bill_cents_txt(void) {
+//  return "44";
+//}
+//char *calc_get_tip_percent_txt(void) {
+//  return "44";
+//}
+//char *calc_get_num_splitting_txt(void) {
+//  return "4";
+//}
+//char *calc_get_tip_txt(void) {
+//  return "344.44";
+//}
+//char *calc_get_total_txt(void) {
+//  return "1344.44";
+//}
+//char *calc_get_total_per_person_txt(void) {
+//  return "1344.44";
+//}

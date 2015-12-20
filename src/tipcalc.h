@@ -21,7 +21,7 @@ typedef struct{
 
 typedef struct {
     GPoint right_center_point;
-    int max_width;
+    int16_t max_width;
     GFont font;
     int16_t font_size;
     GetTxtCallback *get_text;
@@ -29,7 +29,7 @@ typedef struct {
 
 typedef struct {
     GPoint right_center_point;
-    int max_width;
+    int16_t max_width;
     GFont font;
     int16_t font_size;
     GetTxtCallback *get_text;
