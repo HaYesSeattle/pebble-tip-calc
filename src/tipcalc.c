@@ -15,9 +15,6 @@
 #define SUM_LINE_GCOLOR GColorFromHEX(0x979797)
 
 
-// TODO: shake to clear
-
-
 static int current_input_idx = 0;  // use in click handlers to select callbacks
 static InputField *input_fields[NUM_INPUT_FIELDS];
 
@@ -184,14 +181,14 @@ static Layer *line_layer_create(Line line) {
 }
 
 
-// ************************************************** click handlers **************************************************
+// *******************************************  click & tap event handlers  *******************************************
 
 static int get_click_accelerated_delta(int num_clicks) {
   int ms = num_clicks * BUTTON_HOLD_REPEAT_MS;  // milliseconds button has been held down for
   int delta;
-  if(ms <= 4000) {  // 0-4 seconds: increment by one on every interval
+  if(ms <= 5000) {  // 0-4 seconds: increment by one on every interval
     delta = 1;
-  } else if(4000 < ms && ms <= 10000 && num_clicks % 3 == 0) {  // 4-10 seconds: increment by 10 on every 3rd interval
+  } else if(5000 < ms && ms <= 10000 && num_clicks % 3 == 0) {  // 4-10 seconds: increment by 10 on every 3rd interval
     delta = 10;
   } else if(10000 < ms  && num_clicks % 5 == 0) {  // 10+ seconds: increment by 100 on every 5th interval
     delta = 100;
@@ -230,8 +227,7 @@ static void down_click_handler(ClickRecognizerRef recognizer, void *context) {
 }
 
 
-// TODO: Implement select button long-click functionality
-// TODO: Flash selection frame when pressed on last input
+
 static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
   if(current_input_idx < NUM_INPUT_FIELDS - 1) {
     input_fields[current_input_idx]->is_selected = false;
@@ -263,6 +259,14 @@ static void click_config_provider(void *context) {
   window_single_repeating_click_subscribe(BUTTON_ID_DOWN, BUTTON_HOLD_REPEAT_MS, down_click_handler);
 }
 
+
+static void accel_tap_handler(AccelAxisType axis, int32_t direction) {
+  calc_reset_to_defaults();
+  layer_mark_dirty(main_layer);
+}
+
+
+// *******************************************  launch, setup, & teardown  ********************************************
 
 static void main_window_load(Window* window) {
   main_layer = window_get_root_layer(main_window);
@@ -315,7 +319,7 @@ static void main_window_load(Window* window) {
       .text = "$"
   });
 
-  // Tip amount  TODO: Inform Beth that tips > $100 would push tip % completely off screen
+  // Tip amount  TODO: Inform Beth that tips > $100 would push tip % completely off screen using non-condensed font
   tip_amount_layer = output_layer_create((OutputField){
       .right_center_point = GPoint(main_bounds.size.w - (int16_t)WINDOW_INSET, ROW_2_Y),
       .max_width = 74,  // 399.6 -> 65
@@ -434,6 +438,9 @@ static void main_window_unload(Window *window) {
 
 static void init(void) {
   calc_persist_read();
+
+  accel_tap_service_subscribe((AccelTapHandler)accel_tap_handler);
+
   main_window = window_create();
   window_set_click_config_provider(main_window, click_config_provider);
   window_set_window_handlers(main_window, (WindowHandlers){
@@ -446,7 +453,8 @@ static void init(void) {
 
 static void deinit(void) {
   window_destroy(main_window);
-  calc_persist_store();  // TODO: uncomment before release
+  accel_tap_service_unsubscribe();
+  calc_persist_store();
 }
 
 

@@ -139,7 +139,6 @@ char *calc_get_total_per_person_txt(void) {
 
 // ******************************************* CalcManipCallback callbacks ********************************************
 
-// TODO: don't update totals when accelerated scrolling?
 void calc_manip_bill_dollars(int delta) {
   if(bill.dollars + delta > MAX_BILL_DOLLARS) {
     bill.dollars = MIN_BILL_DOLLARS;

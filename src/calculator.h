@@ -15,6 +15,8 @@ void calc_manip_bill_dollars(int);
 void calc_manip_bill_cents(int);
 void calc_manip_tip_percent(int);
 void calc_manip_num_splitting(int);
+
+void calc_reset_to_defaults(void);
 void calc_update_totals(void);
 
 char *calc_get_bill_dollars_txt(void);
