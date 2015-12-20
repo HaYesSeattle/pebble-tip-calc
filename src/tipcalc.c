@@ -71,10 +71,10 @@ static GRect field_get_text_frame(Field *field) {
 static void field_draw_text(Field *field, char *text, GContext *ctx) {
   GRect text_frame = field_get_text_frame(field);
   GSize calculated_size = graphics_text_layout_get_content_size(text, field->font, main_bounds,
-                                                                GTextOverflowModeWordWrap, GTextAlignmentRight);
+                                                                GTextOverflowModeWordWrap, GTextAlignmentCenter);
   log_grect(text_frame, text);  // TODO: REMOVE
   log_gsize(calculated_size, text);  // TODO: REMOVE
-  graphics_draw_text(ctx, text, field->font, text_frame, GTextOverflowModeWordWrap, GTextAlignmentRight, NULL);
+  graphics_draw_text(ctx, text, field->font, text_frame, GTextOverflowModeWordWrap, GTextAlignmentCenter, NULL);
 }
 
 
@@ -94,6 +94,9 @@ static void input_field_update_proc(Layer *layer, GContext *ctx) {
     graphics_fill_rect(ctx, selection_frame, 4, GCornersAll);
     log_grect(selection_frame, "selection frame");  // TODO: REMOVE
   } else {
+    GRect text_frame = field_get_text_frame((Field *)input_field);
+    GRect selection_frame = grect_inset(text_frame, input_field->selection_insets);
+    graphics_draw_round_rect(ctx, selection_frame, 4);
     graphics_context_set_text_color(ctx, GColorBlack);
   }
 
@@ -239,6 +242,7 @@ static void back_click_handler(ClickRecognizerRef recognizer, void *context) {
   } else {
     window_stack_pop(true);
   }
+  calc_update_totals();
   layer_mark_dirty(main_layer);
 }
 

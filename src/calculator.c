@@ -170,6 +170,7 @@ void calc_manip_tip_percent(int delta) {
   } else {
     tip_percent += delta;
   }
+  calc_update_totals();
 }
 
 
