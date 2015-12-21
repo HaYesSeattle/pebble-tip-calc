@@ -1,9 +1,9 @@
 {
   "uuid": "339b8224-5f8d-4e45-8db9-6ee56ab003cd",
-  "shortName": "tipcalc",
-  "longName": "tipcalc",
-  "companyName": "Eric Hontz",
-  "versionLabel": "1.0",
+  "shortName": "Tip Calc",
+  "longName": "Pebble Tip Calculator",
+  "companyName": "King Salmon Creative",
+  "versionLabel": "0.1",
   "sdkVersion": "3",
   "targetPlatforms": ["aplite", "basalt"],
   "watchapp": {
