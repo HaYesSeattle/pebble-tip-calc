@@ -1,0 +1,43 @@
+{
+  "uuid": "339b8224-5f8d-4e45-8db9-6ee56ab003cd",
+  "shortName": "Tip Calc",
+  "longName": "Pebble Tip Calculator",
+  "companyName": "King Salmon Creative",
+  "versionLabel": "0.1",
+  "sdkVersion": "3",
+  "targetPlatforms": ["aplite", "basalt"],
+  "watchapp": {
+    "watchface": false
+  },
+  "appKeys": {
+    "dummy": 0
+  },
+  "resources": {
+    "media": [
+      {
+        "type": "font",
+        "name": "HELVETICA_ROUNDED_18",
+        "file": "fonts/HelveticaRoundedLTStd-BdCn.ttf",
+        "characterRegex": "[.% $0-9÷]"
+      },
+      {
+        "type": "font",
+        "name": "HELVETICA_ROUNDED_22",
+        "file": "fonts/HelveticaRoundedLTStd-BdCn.ttf",
+        "characterRegex": "[.% $0-9÷]"
+      },
+      {
+        "type": "font",
+        "name": "HELVETICA_ROUNDED_24",
+        "file": "fonts/HelveticaRoundedLTStd-BdCn.ttf",
+        "characterRegex": "[.% $0-9÷]"
+      },
+      {
+        "type": "font",
+        "name": "HELVETICA_ROUNDED_26",
+        "file": "fonts/HelveticaRoundedLTStd-BdCn.ttf",
+        "characterRegex": "[.% $0-9÷]"
+      }
+    ]
+  }
+}
