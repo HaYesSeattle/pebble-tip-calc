@@ -13,6 +13,7 @@
 #define BUTTON_HOLD_REPEAT_MS 100
 #define NUM_INPUT_FIELDS 4
 #define SUM_LINE_GCOLOR GColorFromHEX(0x979797)
+#define OVERFLOW_MODE GTextOverflowModeWordWrap
 
 
 static int current_input_idx = 0;  // use in click handlers to select callbacks
@@ -68,10 +69,10 @@ static GRect field_get_text_frame(Field *field) {
 static void field_draw_text(Field *field, char *text, GContext *ctx) {
   GRect text_frame = field_get_text_frame(field);
   GSize calculated_size = graphics_text_layout_get_content_size(text, field->font, main_bounds,
-                                                                GTextOverflowModeWordWrap, GTextAlignmentCenter);
+                                                                OVERFLOW_MODE, GTextAlignmentCenter);
   log_grect(text_frame, text);  // TODO: REMOVE
   log_gsize(calculated_size, text);  // TODO: REMOVE
-  graphics_draw_text(ctx, text, field->font, text_frame, GTextOverflowModeWordWrap, GTextAlignmentCenter, NULL);
+  graphics_draw_text(ctx, text, field->font, text_frame, OVERFLOW_MODE, GTextAlignmentCenter, NULL);
 }
 
 
