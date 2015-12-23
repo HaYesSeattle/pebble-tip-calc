@@ -3,13 +3,13 @@
 #include "calculator.h"
 
 
-static bool debug = false;
+static bool debug = true;
 
 
 void log_grect(GRect grect, char *info) {
   if(debug) {
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "GRect %s: .x = %d, .y = %d, .w = %d, .h = %d",
-            info, grect.origin.x, grect.origin.y, grect.size.w, grect.size.h);
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "GRect: .x = %4d, .y = %4d, .w = %4d, .h = %4d\t(%s)",
+            grect.origin.x, grect.origin.y, grect.size.w, grect.size.h, info);
   }
 }
 
