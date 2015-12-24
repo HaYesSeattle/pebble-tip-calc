@@ -9,6 +9,7 @@ typedef struct {
     int16_t max_width;
     GFont font;
     int16_t font_size;
+    GTextAlignment text_alignment;
 } Field;
 
 typedef struct{
@@ -16,6 +17,7 @@ typedef struct{
     int16_t max_width;
     GFont font;
     int16_t font_size;
+    GTextAlignment text_alignment;
     char *text;
 } DecorationField;
 
@@ -24,6 +26,7 @@ typedef struct {
     int16_t max_width;
     GFont font;
     int16_t font_size;
+    GTextAlignment text_alignment;
     GetTxtCallback *get_text;
 } OutputField;
 
@@ -32,6 +35,7 @@ typedef struct {
     int16_t max_width;
     GFont font;
     int16_t font_size;
+    GTextAlignment text_alignment;
     GetTxtCallback *get_text;
     GEdgeInsets selection_insets;
     CalcManipCallback *manipulate;

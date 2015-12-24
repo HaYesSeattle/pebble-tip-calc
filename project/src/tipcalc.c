@@ -6,7 +6,7 @@
 // TODO: REMOVE utils import
 
 #define BOARDER 3
-#define WINDOW_INSET 3
+#define WINDOW_INSET 5
 #define ROW_1_Y 17
 #define ROW_2_Y 75
 #define ROW_3_Y 147
@@ -29,12 +29,10 @@ static Layer *bill_period_layer;
 static Layer *bill_dollars_layer;
 static Layer *bill_dollar_sign_layer;
 static Layer *tip_amount_layer;
-static Layer *tip_amount_dollar_sign_layer;
 static Layer *tip_percent_sign_layer;
 static Layer *tip_percent_layer;
 static Layer *sum_line_layer;
 static Layer *total_per_person_layer;
-static Layer *total_per_person_dollar_sign_layer;
 static Layer *num_splitting_layer;
 static Layer *num_splitting_symbol_layer;
 
@@ -68,11 +66,14 @@ static GRect field_get_text_frame(Field *field) {
 
 static void field_draw_text(Field *field, char *text, GContext *ctx) {
   GRect text_frame = field_get_text_frame(field);
+
+  // TODO: REMOVE
   GSize calculated_size = graphics_text_layout_get_content_size(text, field->font, main_bounds,
-                                                                OVERFLOW_MODE, GTextAlignmentCenter);
+                                                                OVERFLOW_MODE, field->text_alignment);
   log_grect(text_frame, text);  // TODO: REMOVE
   log_gsize(calculated_size, text);  // TODO: REMOVE
-  graphics_draw_text(ctx, text, field->font, text_frame, OVERFLOW_MODE, GTextAlignmentCenter, NULL);
+
+  graphics_draw_text(ctx, text, field->font, text_frame, OVERFLOW_MODE, field->text_alignment, NULL);
 }
 
 
@@ -108,6 +109,11 @@ static void output_field_layer_update_proc(Layer *layer, GContext *ctx) {
 
   graphics_context_set_text_color(ctx, GColorBlack);
   field_draw_text((Field *)output_field, output_field->get_text(), ctx);
+
+  // TODO: REMOVE
+//  GSize calculated_size = graphics_text_layout_get_content_size(output_field->get_text(), output_field->font,
+//                                                                main_bounds, OVERFLOW_MODE, output_field->text_alignment);
+//  GRect frame =
 }
 
 
@@ -284,6 +290,7 @@ static void main_window_load(Window* window) {
       .max_width = 26,
       .font = helvetica_24,
       .font_size = 24,
+      .text_alignment = GTextAlignmentCenter,
       .get_text = calc_get_bill_cents_txt,
       .selection_insets = helvetica_24_insets,
       .manipulate = calc_manip_bill_cents,
@@ -296,6 +303,7 @@ static void main_window_load(Window* window) {
       .max_width = 5,
       .font = helvetica_24,
       .font_size = 24,
+      .text_alignment = GTextAlignmentCenter,
       .text = "."
   });
 
@@ -305,6 +313,7 @@ static void main_window_load(Window* window) {
       .max_width = 39,
       .font = helvetica_24,
       .font_size = 24,
+      .text_alignment = GTextAlignmentRight,
       .get_text = calc_get_bill_dollars_txt,
       .selection_insets = helvetica_24_insets,
       .manipulate = calc_manip_bill_dollars,
@@ -317,33 +326,27 @@ static void main_window_load(Window* window) {
       .max_width = 9,
       .font = helvetica_18,
       .font_size = 18,
+      .text_alignment = GTextAlignmentRight,
       .text = "$"
   });
 
   // Tip amount  TODO: Inform Beth that tips > $100 would push tip % completely off screen using non-condensed font
   tip_amount_layer = output_layer_create((OutputField){
       .right_center_point = GPoint(main_bounds.size.w - (int16_t)WINDOW_INSET, ROW_2_Y),
-      .max_width = 74,  // 399.6 -> 65
+      .max_width = 89,
       .font = helvetica_26,
       .font_size = 26,
+      .text_alignment = GTextAlignmentRight,
       .get_text = calc_get_tip_txt
-  });
-
-  // Tip amount ($)
-  tip_amount_dollar_sign_layer = decoration_layer_create((DecorationField){
-      .right_center_point = field_get_left_center_point((Field *)layer_get_data(tip_amount_layer), 0),
-      .max_width = 9,
-      .font = helvetica_18,
-      .font_size = 18,
-      .text = "$"
   });
 
   // Tip percent (%)
   tip_percent_sign_layer = decoration_layer_create((DecorationField){
-      .right_center_point = field_get_left_center_point((Field *)layer_get_data(tip_amount_dollar_sign_layer), 10),
+      .right_center_point = field_get_left_center_point((Field *)layer_get_data(tip_amount_layer), 4),
       .max_width = 16,
       .font = helvetica_18,
       .font_size = 18,
+      .text_alignment = GTextAlignmentLeft,
       .text = "%"
   });
 
@@ -353,6 +356,7 @@ static void main_window_load(Window* window) {
       .max_width = 23,
       .font = helvetica_22,
       .font_size = 22,
+      .text_alignment = GTextAlignmentRight,
       .get_text = calc_get_tip_percent_txt,
       .selection_insets = helvetica_22_insets,
       .manipulate = calc_manip_tip_percent,
@@ -361,7 +365,7 @@ static void main_window_load(Window* window) {
 
   // Summation line
   sum_line_layer = line_layer_create((Line){
-      .start_point = GPoint(59, ROW_2_Y + 17),
+      .start_point = GPoint(55, ROW_2_Y + 17),
       .end_point = GPoint(main_bounds.size.w - (int16_t)WINDOW_INSET, ROW_2_Y + 17),
       .stroke_width = 3,
       .stroke_color = PBL_IF_COLOR_ELSE(SUM_LINE_GCOLOR, GColorBlack)
@@ -370,28 +374,21 @@ static void main_window_load(Window* window) {
   // Total/person
   total_per_person_layer = output_layer_create((OutputField){
       .right_center_point = GPoint(main_bounds.size.w - (int16_t)WINDOW_INSET, ROW_3_Y),
-      .max_width = 83,
+      .max_width = 98,
       .font = helvetica_26,
       .font_size = 26,
+      .text_alignment = GTextAlignmentRight,
       .get_text = calc_get_total_per_person_txt
-  });
-
-  // Total/person ($)
-  total_per_person_dollar_sign_layer = decoration_layer_create((DecorationField){
-      .right_center_point = field_get_left_center_point((Field *)layer_get_data(total_per_person_layer), 0),
-      .max_width = 9,
-      .font = helvetica_18,
-      .font_size = 18,
-      .text = "$"
   });
 
   // Number of people splitting
   num_splitting_layer = input_layer_create((InputField){
-      .right_center_point = field_get_left_center_point((Field *)layer_get_data(total_per_person_dollar_sign_layer),
-                                                        BOARDER + 12),
+      .right_center_point = field_get_left_center_point((Field *)layer_get_data(total_per_person_layer),
+                                                        BOARDER + 7),
       .max_width = 13,
       .font = helvetica_22,
       .font_size = 22,
+      .text_alignment = GTextAlignmentCenter,
       .get_text = calc_get_num_splitting_txt,
       .selection_insets = helvetica_22_insets,
       .manipulate = calc_manip_num_splitting,
@@ -404,6 +401,7 @@ static void main_window_load(Window* window) {
       .max_width = 14,
       .font = helvetica_22,
       .font_size = 22,
+      .text_alignment = GTextAlignmentRight,
       .text = "÷"
   });
 
@@ -422,12 +420,10 @@ static void main_window_unload(Window *window) {
   layer_destroy(bill_dollars_layer);
   layer_destroy(bill_dollar_sign_layer);
   layer_destroy(tip_amount_layer);
-  layer_destroy(tip_amount_dollar_sign_layer);
   layer_destroy(tip_percent_sign_layer);
   layer_destroy(tip_percent_layer);
   layer_destroy(sum_line_layer);
   layer_destroy(total_per_person_layer);
-  layer_destroy(total_per_person_dollar_sign_layer);
   layer_destroy(num_splitting_layer);
   layer_destroy(num_splitting_symbol_layer);
 

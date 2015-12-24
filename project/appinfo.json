@@ -35,7 +35,7 @@
       {
         "type": "font",
         "name": "HELVETICA_ROUNDED_26",
-        "file": "fonts/HelveticaRoundedLTStd-BdCn.ttf",
+        "file": "fonts/HelveticaRoundedLTStd-BdCn-smalld.ttf",
         "characterRegex": "[.% $0-9÷]"
       }
     ]
