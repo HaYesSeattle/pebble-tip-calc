@@ -123,13 +123,6 @@ char *calc_get_tip_txt(void) {
 }
 
 
-char *calc_get_total_txt(void) {  // TODO: REMOVE if not used
-  static char s_buffer[8];
-  snprintf(s_buffer, sizeof(s_buffer), "$%d.%02d", total.dollars, total.cents);
-  return s_buffer;
-}
-
-
 char *calc_get_total_per_person_txt(void) {
   static char s_buffer[8];
   snprintf(s_buffer, sizeof(s_buffer), "$%d.%02d", total_per_person.dollars, total_per_person.cents);
@@ -183,28 +176,3 @@ void calc_manip_num_splitting(int delta) {
   }
   calc_update_totals();
 }
-
-
-// **************************************************** debugging *****************************************************
-// TODO: REMOVE
-//char *calc_get_bill_dollars_txt(void) {
-//  return "444";
-//}
-//char *calc_get_bill_cents_txt(void) {
-//  return "44";
-//}
-//char *calc_get_tip_percent_txt(void) {
-//  return "40";
-//}
-//char *calc_get_num_splitting_txt(void) {
-//  return "4";
-//}
-//char *calc_get_tip_txt(void) {
-//  return "$344.44";
-//}
-//char *calc_get_total_txt(void) {
-//  return "$1344.44";
-//}
-//char *calc_get_total_per_person_txt(void) {
-//  return "$1344.44";
-//}

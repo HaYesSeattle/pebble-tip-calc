@@ -2,8 +2,6 @@
 
 #include "calculator.h"
 #include "tipcalc.h"
-#include "utils.h"
-// TODO: REMOVE utils import
 
 #define BOARDER 3
 #define WINDOW_INSET 5
@@ -45,12 +43,9 @@ static GEdgeInsets helvetica_22_insets = {6 - BOARDER - 1, 1 - BOARDER, 0 - BOAR
 static GEdgeInsets helvetica_24_insets = {7 - BOARDER - 1, 1 - BOARDER, 0 - BOARDER - 1, 1 - BOARDER};
 
 
-
-
 static GPoint field_get_left_center_point(Field *field, int16_t left_padding) {
   int16_t x = field->right_center_point.x - field->max_width - left_padding;
   int16_t y = field->right_center_point.y;
-  log_gpoint(GPoint(x, y), "field_get_left_center_point");  // TODO: REMOVE
   return GPoint(x, y);
 }
 
@@ -59,20 +54,12 @@ static GRect field_get_text_frame(Field *field) {
   // Get coordinates of left corner of text frame.
   int16_t x = field->right_center_point.x - field->max_width;
   int16_t y = field->right_center_point.y - field->font_size/(int16_t)2;
-//  log_grect(GRect(x, y, field->max_width, field->font_size), "field_get_text_frame");  // TODO: REMOVE
   return GRect(x, y, field->max_width, field->font_size);
 }
 
 
 static void field_draw_text(Field *field, char *text, GContext *ctx) {
   GRect text_frame = field_get_text_frame(field);
-
-  // TODO: REMOVE
-  GSize calculated_size = graphics_text_layout_get_content_size(text, field->font, main_bounds,
-                                                                OVERFLOW_MODE, field->text_alignment);
-  log_grect(text_frame, text);  // TODO: REMOVE
-  log_gsize(calculated_size, text);  // TODO: REMOVE
-
   graphics_draw_text(ctx, text, field->font, text_frame, OVERFLOW_MODE, field->text_alignment, NULL);
 }
 
@@ -91,7 +78,6 @@ static void input_field_update_proc(Layer *layer, GContext *ctx) {
     GRect selection_frame = grect_inset(text_frame, input_field->selection_insets);
     // Draw the selection indicator's frame.
     graphics_fill_rect(ctx, selection_frame, 4, GCornersAll);
-    log_grect(selection_frame, "selection frame");  // TODO: REMOVE
   } else {
     GRect text_frame = field_get_text_frame((Field *)input_field);
     GRect selection_frame = grect_inset(text_frame, input_field->selection_insets);
@@ -109,11 +95,6 @@ static void output_field_layer_update_proc(Layer *layer, GContext *ctx) {
 
   graphics_context_set_text_color(ctx, GColorBlack);
   field_draw_text((Field *)output_field, output_field->get_text(), ctx);
-
-  // TODO: REMOVE
-//  GSize calculated_size = graphics_text_layout_get_content_size(output_field->get_text(), output_field->font,
-//                                                                main_bounds, OVERFLOW_MODE, output_field->text_alignment);
-//  GRect frame =
 }
 
 
@@ -330,7 +311,6 @@ static void main_window_load(Window* window) {
       .text = "$"
   });
 
-  // Tip amount  TODO: Inform Beth that tips > $100 would push tip % completely off screen using non-condensed font
   tip_amount_layer = output_layer_create((OutputField){
       .right_center_point = GPoint(main_bounds.size.w - (int16_t)WINDOW_INSET, ROW_2_Y),
       .max_width = 89,
